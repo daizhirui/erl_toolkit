@@ -24,6 +24,7 @@ setup(
             f"erl-docker-create-container={pkg_name}.docker.create_container:main",
             f"erl-docker-login-container={pkg_name}.docker.login_container:main",
             f"erl-docker-build-images={pkg_name}.docker.build_images:main",
+            f"erl-docker-run-docker={pkg_name}.docker.run_docker:main",
             f"erl-docker-clean-docker={pkg_name}.docker.clean_docker:main",
             f"erl-archlinux-ros-noetic-install={pkg_name}.archlinux.ros_noetic.install:main",
             f"erl-archlinux-paru-helper={pkg_name}.archlinux.paru_helper:main",
