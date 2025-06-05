@@ -33,6 +33,7 @@ def create_container(
     auto_remove: bool = False,
     dns: List[str] = None,
     environment: dict = None,
+    env_vars: List[str] = None,
     gpu: bool = False,
     dev: bool = False,
     gui: bool = False,
@@ -74,7 +75,6 @@ def create_container(
 
     if command is None:
         command = "bash -l"
-        auto_remove = False
 
     if dns is None:
         with open("/etc/resolv.conf", "r") as file:
@@ -100,7 +100,7 @@ def create_container(
         enable_x11 = True
     if enable_x11:
         if not os.path.exists("/tmp/.X11-unix"):
-            logger.warn("X11 is unavailable: /tmp/.X11-unix does not exist.")
+            logger.warning("X11 is unavailable: /tmp/.X11-unix does not exist.")
             exit(1)
         volumes.add("/tmp/.X11-unix:/tmp/.X11-unix")
     for volume in [
@@ -151,6 +151,9 @@ def create_container(
     if environment is not None:
         for k, v in environment.items():
             cmd = cmd + f"-e {k}={v} "
+    if env_vars is not None:
+        for env_var in env_vars:
+            cmd += f"-e {env_var} "
     if group_add is not None:
         for g in group_add:
             cmd = cmd + f"--group-add {g} "
@@ -242,11 +245,23 @@ def main():
     parser.add_argument("--dev", action="store_true", help="Connect all devices to the container")
     parser.add_argument("--gui", action="store_true", help="Connect DISPLAY to the container")
     parser.add_argument("--command", type=str)
-    parser.add_argument("--user", type=str, default=f"{os.environ['USER']}", help=f"Default: {os.environ['USER']}")
     parser.add_argument("--overwrite-entrypoint", action="store_true")
+    parser.add_argument("--auto-remove", action="store_true", help="Automatically remove the container when it exits")
     parser.add_argument("--mounts", type=str, action="append", help="Mount host directory to container")
     parser.add_argument("--ports", type=str, nargs="+", help="Ports to map from the container to the host")
+    parser.add_argument("--user", type=str, default=f"{os.environ['USER']}", help=f"Default: {os.environ['USER']}")
     parser.add_argument("--sshd", action="store_true", help="Enable SSHD")
+    parser.add_argument(
+        "--env",
+        type=str,
+        nargs="+",
+        help="Environment variables to set in the container (e.g., --env VAR1 VAR2=value2)",
+    )
+    parser.add_argument(
+        "--extra-args",
+        type=str,
+        help="Extra arguments for the docker exec command",
+    )
 
     args = parser.parse_args()
     entrypoint = None
@@ -265,16 +280,18 @@ def main():
             mounts.append(mount)
         args.mounts = mounts
     create_container(
-        args.name,
-        args.image,
-        args.command,
-        user=args.user,
+        name=args.name,
+        image=args.image,
+        command=args.command,
         entrypoint=entrypoint,
+        auto_remove=args.auto_remove,
+        env_vars=args.env,
         gpu=args.gpu,
         gui=args.gui,
         ports=args.ports,
         mounts=args.mounts,
         dev=args.dev,
+        user=args.user,
         sshd=args.sshd,
     )
 
