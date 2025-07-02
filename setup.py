@@ -33,6 +33,7 @@ setup(
             f"erl-pdf-merge-pdfs={pkg_name}.pdf.merge_pdfs:main",
             f"erl-video-img2video={pkg_name}.video.img2video:main",
             f"erl-video-stack-videos={pkg_name}.video.stack_videos:main",
+            f"erl-plt-draw-curves={pkg_name}.common.draw_curves:main",
         ]
     ),
 )
