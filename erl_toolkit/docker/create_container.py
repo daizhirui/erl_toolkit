@@ -76,11 +76,12 @@ def create_container(
     if command is None:
         command = "bash -l"
 
-    if dns is None:
-        with open("/etc/resolv.conf", "r") as file:
-            dns = file.readlines()
-        dns = [x.split(" ")[1].strip() for x in dns if x.startswith("nameserver")]
-        dns = [x for x in dns if x[0].isnumeric() and x != "127.0.0.1"]
+    # skip dns setting to make it work when host network is changed
+    # if dns is None:
+    #     with open("/etc/resolv.conf", "r") as file:
+    #         dns = file.readlines()
+    #     dns = [x.split(" ")[1].strip() for x in dns if x.startswith("nameserver")]
+    #     dns = [x for x in dns if x[0].isnumeric() and x != "127.0.0.1"]
 
     if environment is None:
         environment = dict()
@@ -213,7 +214,7 @@ def create_container(
                 src_file = os.path.join("/etc", f)
                 dst_file = os.path.join(CONFIG_DIR, f)
                 if not os.path.exists(src_file):
-                    logger.warn(f"{src_file} does not exist.")
+                    logger.warning(f"{src_file} does not exist.")
                     continue
                 os.system(f"sudo grep {user} {src_file} > {dst_file}")
                 c.exec_run(user="root", tty=True, cmd=f"bash -c 'cat {dst_file} >> {src_file}'")
