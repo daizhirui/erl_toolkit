@@ -175,7 +175,7 @@ def create_container(
             cmd = cmd + f"-v {v} "
     cmd = cmd + f"--workdir /home/{user} "
     if gpu:
-        cmd = cmd + "--gpus all "
+        cmd = cmd + "--gpus all --runtime=nvidia "
     if entrypoint is not None:
         cmd = cmd + f"--entrypoint {entrypoint} "
     if gui:
