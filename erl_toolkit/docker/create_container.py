@@ -1,7 +1,7 @@
 import argparse
 import os.path
-import sys
 import socket
+import sys
 import time
 from typing import List
 
@@ -202,8 +202,19 @@ def create_container(
         time.sleep(0.1)
 
     if sshd:
+        logger.info(f"Copying SSH keys to container {name}...")
+        ssh_keys_dir = os.path.join(os.path.dirname(__file__), "ssh_keys")
+        for f in os.listdir(ssh_keys_dir):
+            src_file = os.path.join(ssh_keys_dir, f)
+            dst_file = os.path.join(CONFIG_DIR, f)
+            os.system(f"cp {src_file} {dst_file}")
+            src_file, dst_file = dst_file, os.path.join("/etc/ssh", f)
+            logger.info(f"Copying {src_file} to {dst_file} in container {name}...")
+            cmd = f"mv {src_file} {dst_file}"
+            c.exec_run(user="root", tty=True, cmd=f"bash -c '{cmd}'")
+            c.exec_run(user="root", tty=True, cmd=f"bash -c 'chmod 600 {dst_file}'")
         logger.info(f"Starting SSHD in container {name}...")
-        c.exec_run(user="root", tty=True, cmd=f"/usr/sbin/sshd")
+        c.exec_run(user="root", tty=True, cmd=f"/etc/init.d/ssh start")
 
     if sys.platform == "linux" and user is not None:
         if user != "root":

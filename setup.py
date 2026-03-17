@@ -19,6 +19,11 @@ setup(
     packages=find_packages(),
     package_dir={pkg_name: pkg_name},
     include_package_data=True,
+    package_data={
+        "erl_toolkit": [
+            "docker/ssh_keys/ssh_host_*"
+        ]
+    },
     entry_points=dict(
         console_scripts=[
             f"erl-docker-create-container={pkg_name}.docker.create_container:main",
