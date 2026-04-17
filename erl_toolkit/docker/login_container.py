@@ -1,5 +1,6 @@
 import argparse
 import os
+import shlex   # safely quote paths with spaces
 
 import docker
 
@@ -21,6 +22,15 @@ def login_container(name: str, user: str, shell: str, env_vars: list = None, ext
     else:
         home = f"/home/{user}"
 
+    cwd = os.getcwd()
+    workdir = None
+    try:
+        result = container.exec_run(["test", "-d", cwd])
+        if result.exit_code == 0:
+            workdir = cwd
+    except docker.errors.DockerException:
+        logger.debug("Unable to verify cwd inside container", exc_info=True)
+
     cmd = f"xhost +si:localuser:{user}"
     print(cmd)
     os.system(cmd)
@@ -31,6 +41,8 @@ def login_container(name: str, user: str, shell: str, env_vars: list = None, ext
         f"--user {user} "
         f"--env HOME={home} "
     )
+    if workdir is not None:
+        cmd += f"--workdir {shlex.quote(workdir)} "
     if env_vars is not None:
         for env_var in env_vars:
             cmd += f"--env {env_var} "
