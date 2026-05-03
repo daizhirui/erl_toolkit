@@ -17,5 +17,9 @@ RUN git clone https://aur.archlinux.org/paru.git && \
 USER root
 RUN pacman -U --noconfirm /home/user/paru/paru-*.pkg.tar.zst && \
     rm -rf /home/user/paru
+
+# Install more dev tools
+RUN paru -S --noconfirm base-devel gcc ccache cmake less
+
 WORKDIR /root
 RUN userdel -r user
